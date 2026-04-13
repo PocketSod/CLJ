@@ -19,43 +19,111 @@
 
 ## 2. Backend Comparison
 
-| Criteria | Airtable | Supabase | Headless CMS (Sanity/Contentful) | Firebase |
-|---|---|---|---|---|
-| **Built-in auth** | ❌ None | ✅ Full (email, magic link, OAuth) | ❌ None | ✅ Full |
-| **Member self-service** | ⚠️ Via forms only; no portal | ✅ Row-level security per member | ❌ Not designed for this | ✅ Yes |
-| **Calendar support** | ⚠️ Admin view only | ✅ Custom; real-time updates | ❌ No | ✅ Custom |
-| **Complex queries** | ⚠️ Limited filtering | ✅ Full SQL (Postgres) | ❌ No | ⚠️ NoSQL limits |
-| **File/photo storage** | ⚠️ Attachments only | ✅ Built-in S3-compatible | ⚠️ Asset CDN only | ✅ Cloud Storage |
-| **Email / serverless** | ⚠️ Automations (paid) | ✅ Edge Functions | ❌ No | ✅ Cloud Functions |
-| **Real-time** | ❌ No | ✅ Yes | ❌ No | ✅ Yes |
-| **Open source / self-hostable** | ❌ Proprietary | ✅ Fully open source | ❌ Proprietary | ❌ Google lock-in |
-| **Free tier** | ⚠️ 1,200 records; $20/user | ✅ 500MB DB, 50k MAU auth | ⚠️ Limited | ✅ Generous |
-| **Coop values alignment** | ❌ Poor | ✅ Strong | ⚠️ Neutral | ❌ Google dependency |
-| **Dev complexity** | Low | Medium | Low | Medium |
+| Criteria | Airtable | Supabase | Headless CMS | Firebase | **Google Workspace** |
+|---|---|---|---|---|---|
+| **Built-in auth** | ❌ None | ✅ Full (email, magic link, OAuth) | ❌ None | ✅ Full | ⚠️ Google accounts only |
+| **Member self-service portal** | ⚠️ Forms only | ✅ RLS per member | ❌ No | ✅ Yes | ⚠️ AppScript web app required |
+| **Calendar** | ⚠️ Admin view | ✅ Custom + real-time | ❌ No | ✅ Custom | ✅ Google Calendar — best-in-class |
+| **Complex queries / directory** | ⚠️ Limited | ✅ Full SQL | ❌ No | ⚠️ NoSQL | ⚠️ Sheets API; limited filtering |
+| **File / photo storage** | ⚠️ Attachments | ✅ S3-compatible | ⚠️ CDN only | ✅ Yes | ✅ Google Drive |
+| **Email / automation** | ⚠️ Paid | ✅ Edge Functions | ❌ No | ✅ Yes | ✅ AppScript + Gmail |
+| **Real-time updates** | ❌ No | ✅ Yes | ❌ No | ✅ Yes | ⚠️ Sheets polling; Calendar is real-time |
+| **Open source / self-hostable** | ❌ No | ✅ Yes | ❌ No | ❌ Google lock-in | ❌ Google lock-in |
+| **Cost** | $20/user | Free → $25/mo | Limited free | Free tier | $6/user/mo (no nonprofit discount for LLCs) |
+| **Coop values alignment** | ❌ Poor | ✅ Strong | ⚠️ Neutral | ❌ Google dep. | ⚠️ Familiar but proprietary |
+| **Non-dev usability** | ✅ High | ⚠️ Medium | ✅ High | ⚠️ Medium | ✅ Very high |
+| **Dev complexity** | Low | Medium | Low | Medium | Low–Medium |
 
 ---
 
-## 3. Decision: Supabase ✅
+## 3. Google Workspace Evaluation
 
-**Supabase is the clear choice for ILJC.**
+### What Google Workspace Offers
 
-### Why
+| Tool | ILJC Use Case | Verdict |
+|---|---|---|
+| **Google Calendar** | Member-editable shared calendar; public embed; iCal subscribe | ✅ Excellent — best-in-class |
+| **Google Forms** | Service request intake; membership applications | ✅ Works well; no dev required |
+| **Google Sheets** | Member directory "database"; request tracking | ⚠️ Workable but not queryable from website |
+| **Google Drive** | Member photos, translated documents | ✅ Good; familiar to everyone |
+| **Gmail + AppScript** | Email notifications; automated workflows | ✅ Solid for basic automation |
+| **AppScript Web Apps** | Custom member portal UI on top of Sheets | ⚠️ Possible but significant dev effort |
+| **Google Meet** | Virtual interpretation delivery | ✅ Already familiar to many |
+| **Google Workspace Admin** | User account management for the coop | ✅ Good for managing member accounts |
 
-1. **Auth is the core requirement.** Members need to log in and self-manage — Airtable and headless CMSs can't do this without bolting on a separate auth system. Supabase auth is built for exactly this use case.
+### Where Google Workspace Wins
 
-2. **Row-level security (RLS) eliminates custom permission logic.** A single Postgres policy (`auth.uid() = member_id`) ensures María can only edit María's profile and events — no application-layer logic required.
+**Calendar is genuinely superior to a custom-built solution.** Members likely already use Google Calendar. Key advantages:
+- Members add/edit events in a UI they already know — zero training
+- Per-member calendars that roll up into one public "ILJC Calendar"
+- Built-in iCal subscribe link — any calendar app works
+- Public Google Calendar embeds directly into the ILJC website
+- Color-coded by member or service type out of the box
+- Mobile app included — no custom PWA needed
 
-3. **Free tier comfortably covers ILJC's scale.** 50 members + 500 events/year + 100 requests/year is a fraction of Supabase's free limits (500MB DB, 50,000 MAU).
+**Non-technical operations.** A Google Form submission drops into a Sheet automatically. An admin can see all service requests, application responses, and member info in familiar spreadsheets. AppScript can send Gmail notifications with zero infrastructure.
 
-4. **Open source and self-hostable.** When the coop is ready, they can move to a self-hosted instance and own their data entirely — a strong alignment with cooperative values.
+**Cost can be near-zero.** If even one member already has Google Workspace (or gets a personal business account), shared drives and calendars can be set up for the group. However, ILJC is an LLC — **it does not qualify for Google Workspace for Nonprofits (free).** Standard pricing is $6/user/month; if only 2–3 admins need accounts, that's $12–18/month.
 
-5. **Postgres handles the hard queries.** "Find all members who speak Arabic, offer medical interpretation, and are available on Thursdays" requires joins and filters that NoSQL or Airtable can't handle cleanly.
+### Where Google Workspace Falls Short
 
-6. **Single platform.** Auth, database, file storage (photos, documents), real-time calendar, and serverless functions for email — all in one service, one bill, one dashboard.
+**No real member portal.** Google Workspace has no native way for a member to visit `iljc.pocketsod.com/portal`, log in, and see a profile page with their own data. The closest options are:
+1. Give members direct Sheets access (messy, error-prone, exposes all rows)
+2. Build an AppScript web app (custom UI over Sheets — doable, but similar dev effort to Supabase with worse scalability)
+3. Use Google Forms for self-updates (no validation, no live profile view)
+
+**Sheets is not a searchable database.** The public directory search ("find interpreters who speak Burmese and do medical work") cannot be powered by a Google Sheet efficiently. It requires either fetching the whole sheet client-side and filtering in JS (works at small scale, fragile) or the Sheets API (rate-limited, slow).
+
+**Google lock-in.** Everything lives in Google's ecosystem. If the coop switches tools, migrating Calendar, Drive, Forms, and Sheets data is painful. This conflicts with the cooperative's data sovereignty values.
+
+**AppScript has hard limits.** Scripts time out at 6 minutes; 20 triggers/user; 100 email recipients/day on free. For ILJC's current scale these are fine, but they're ceilings, not floors.
+
+### Google Workspace Verdict
+
+> **Don't use Google Workspace as the primary backend, but do use Google Calendar for the events layer.**
+>
+> The calendar is where Google wins decisively. Everything else — member auth, directory, request routing — is better served by Supabase.
 
 ---
 
-## 4. Database Schema
+## 4. Decision: Supabase + Google Calendar (Hybrid) ✅
+
+### Final Architecture
+
+| Layer | Tool | Why |
+|---|---|---|
+| **Auth + member portal** | Supabase Auth + RLS | Only tool with built-in per-member access control |
+| **Member directory** | Supabase Postgres | Full SQL search; scales cleanly |
+| **Service requests** | Supabase + Edge Functions | Structured intake → email → member routing |
+| **Membership applications** | Supabase table | Same pipeline as requests; admin review flow |
+| **Calendar — events** | **Google Calendar** | Members already know it; iCal; embeds on site; no custom UI |
+| **File storage** | Supabase Storage | Member photos; docs; linked from profiles |
+| **Email** | Resend (via Supabase Edge Functions) | 3,000 free/month; transactional |
+| **Documents / shared files** | Google Drive | Bylaws, templates, meeting notes — familiar and free |
+
+### Why the Hybrid Wins
+
+1. **Google Calendar eliminates the hardest frontend to build.** A custom calendar UI with member login, event creation, editing, and conflict detection is weeks of development. Google Calendar replaces it with zero code — embed the public calendar with one `<iframe>`.
+
+2. **Members use one familiar tool for scheduling.** Language workers add their availability and upcoming events directly in Google Calendar, the same app they use personally. Adoption is instant.
+
+3. **Supabase still owns the member identity and directory.** When an org searches for a Burmese interpreter, that query hits Postgres. When a member logs in, Supabase Auth controls access. Google Calendar is a view layer, not the source of truth for member data.
+
+4. **iCal bridge is automatic.** Every Google Calendar has a public iCal URL. Organizations and members can subscribe in Outlook, Apple Calendar, or any other app without any development.
+
+### Revised Cost
+
+| Service | Cost |
+|---|---|
+| Supabase | **Free** (scales to $25/month if needed) |
+| Google Calendar | **Free** (personal Google accounts work fine; no Workspace license needed for calendar sharing) |
+| Resend (email) | **Free** up to 3,000 emails/month |
+| GitHub Pages (hosting) | **Free** |
+| **Total** | **$0/month to start** |
+
+---
+
+## 5. Database Schema
 
 ```sql
 -- Lookup tables
@@ -180,7 +248,7 @@ create policy "assigned member sees request"
 
 ---
 
-## 5. Data Flow Diagram
+## 6. Data Flow Diagram
 
 ```mermaid
 flowchart TD
@@ -191,116 +259,132 @@ flowchart TD
   AD([Admin / Board])
 
   %% ── FRONTEND ─────────────────────────────────────────
-  subgraph FE ["Frontend — iljc.pocketsod.com (Static HTML / GitHub Pages)"]
+  subgraph FE ["Frontend — iljc.pocketsod.com (GitHub Pages)"]
     HP[Homepage]
     DIR[Member Directory]
-    CAL[Public Calendar]
+    CAL[Public Calendar\niframe embed]
     REQ[Request Service Form]
     APP[Membership Application Form]
-    PORT[Member Portal\nLogin · Profile · My Events]
+    PORT[Member Portal\nLogin · Profile · Requests]
     ADMP[Admin Panel\nApplications · Members · Requests]
   end
 
+  %% ── GOOGLE ───────────────────────────────────────────
+  subgraph GWS ["Google (Free personal accounts)"]
+    GCAL[Google Calendar\nShared ILJC Calendar]
+    GDRIVE[Google Drive\nBylaws · Docs · Templates]
+    ICAL[/iCal Subscribe URL/]
+  end
+
   %% ── SUPABASE ─────────────────────────────────────────
-  subgraph SB ["Supabase (Backend)"]
+  subgraph SB ["Supabase (Free tier)"]
     AUTH[Auth\nEmail · Magic Link]
-    DB[(Postgres DB\nmembers · events\nrequests · applications)]
-    STR[Storage\nPhotos · Documents]
-    RT[Realtime\nCalendar Updates]
-    FN[Edge Functions\nEmail · Matching Logic]
+    DB[(Postgres DB\nmembers · requests\napplications)]
+    STR[Storage\nPhotos · Docs]
+    FN[Edge Functions\nEmail · Member Matching]
   end
 
   %% ── EMAIL ────────────────────────────────────────────
-  EM[/Email Service\nResend · SendGrid/]
+  EM[/Resend\nEmail Service/]
 
   %% ── PUBLIC VISITOR FLOWS ─────────────────────────────
   PV --> HP
-  HP --> DIR
-  HP --> CAL
-  HP --> REQ
-  HP --> APP
+  HP --> DIR & CAL & REQ & APP
 
-  DIR -->|"query members\n(language, service)"| DB
-  CAL -->|"fetch public events"| DB
-  DB  -->|realtime push| RT
-  RT  -->|live updates| CAL
+  DIR  -->|"SQL: language + service filter"| DB
+  CAL  -->|"iframe embed"| GCAL
+  GCAL -->|"public iCal feed"| ICAL
 
-  REQ -->|"INSERT service_requests"| DB
-  DB  -->|trigger| FN
-  FN  -->|notify admin + matched members| EM
+  REQ  -->|"INSERT service_requests"| DB
+  DB   -->|trigger| FN
+  FN   -->|notify admin + matched members| EM
 
-  APP -->|"INSERT applications"| DB
-  DB  -->|trigger| FN
-  FN  -->|notify admin| EM
+  APP  -->|"INSERT applications"| DB
+  DB   -->|trigger| FN
+  FN   -->|notify admin| EM
 
   %% ── MEMBER FLOWS ─────────────────────────────────────
   MB --> PORT
   PORT -->|login| AUTH
   AUTH -->|JWT| PORT
 
-  PORT -->|"UPDATE members\n(RLS: own row only)"| DB
+  PORT -->|"UPDATE members (RLS: own row)"| DB
   PORT -->|upload photo| STR
-  STR  -->|photo_url| DB
+  STR  -->|photo_url stored| DB
 
-  PORT -->|"INSERT / UPDATE / DELETE events\n(RLS: own events only)"| DB
-  DB   -->|realtime push| RT
+  MB  -->|"add / edit events directly"| GCAL
+  GCAL -->|"live on public calendar"| CAL
 
-  PORT -->|"SELECT service_requests\n(assigned to me)"| DB
+  PORT -->|"SELECT my assigned requests"| DB
   PORT -->|"UPDATE status → confirmed/declined"| DB
   DB   -->|trigger| FN
   FN   -->|confirmation email to org| EM
 
   %% ── ADMIN FLOWS ──────────────────────────────────────
-  AD --> ADMP
+  AD --> ADMP & GCAL & GDRIVE
   ADMP -->|login| AUTH
   AUTH -->|JWT + admin role| ADMP
 
   ADMP -->|"SELECT applications"| DB
-  ADMP -->|"UPDATE status → approved"| DB
-  DB   -->|trigger| FN
-  FN   -->|"create auth user\n+ member record"| AUTH
-  FN   -->|welcome email| EM
+  ADMP -->|"APPROVE → create auth user"| AUTH
+  AUTH -->|new member account| DB
+  FN   -->|welcome email + Calendar invite| EM
+  FN   -->|add to shared Calendar| GCAL
 
-  ADMP -->|"manage all members\nevents · requests"| DB
+  ADMP -->|"manage members · requests"| DB
+  GDRIVE -->|"shared bylaws · templates"| MB
 ```
 
 ---
 
-## 6. Integration Architecture
+## 7. Integration Architecture
 
 ```
 GitHub Pages (static)
-  └── index.html, services.html, calendar.html, directory.html
-  └── member-portal/ (SPA or multi-page, vanilla JS or lightweight framework)
+  └── index.html, services.html, directory.html, about.html
+  └── calendar.html         ← embeds Google Calendar <iframe>; no custom backend
+  └── member-portal/        ← vanilla JS or lightweight framework; talks to Supabase
         └── login.html
         └── profile.html
-        └── my-events.html
+        └── my-events.html  ← links out to member's Google Calendar for editing
         └── requests.html
 
 Supabase (hosted, free tier)
   └── Auth            → member login / session management
-  └── Postgres DB     → all data (members, events, requests, applications)
+  └── Postgres DB     → members, service_requests, applications
+  │                      (events table removed — Google Calendar handles this)
   └── Row-Level Sec.  → members can only touch their own rows
   └── Storage         → member photos, translated docs
-  └── Realtime        → calendar live-updates via websocket
   └── Edge Functions  → email triggers, member matching algorithm
+
+Google Calendar (free, personal Google accounts)
+  └── One shared "ILJC Events" calendar (admin-owned, members invited as editors)
+  └── Optional: per-member sub-calendars that feed into the main calendar
+  └── Public embed URL → calendar.html on the site
+  └── Public iCal URL → any calendar app can subscribe
+  └── Members add/edit events directly in Google Calendar (zero training)
+
+Google Drive (free)
+  └── Bylaws, governance docs, meeting minutes
+  └── Translated materials, templates
 
 Email (Resend — free tier: 3,000 emails/month)
   └── New service request → admin + matched members
   └── Application received → admin
-  └── Application approved → welcome email to new member
+  └── Application approved → welcome email + Google Calendar invite to new member
   └── Booking confirmed → org contact
 ```
 
 ---
 
-## 7. Implementation Phases
+## 8. Implementation Phases
 
 ### Phase 1 — Static + Forms (no auth yet)
 - Service request form → Supabase table → admin email via Edge Function
 - Membership application form → Supabase table → admin email
-- Public calendar from Supabase `events` table (admin-managed for now)
-- Public directory from Supabase `members` table (admin-managed for now)
+- **Public calendar: embed shared Google Calendar** — admin creates ILJC Google Calendar, invites members as editors, embeds public URL on site (zero dev)
+- Public directory from Supabase `members` table (admin-populated for now)
+- Google Drive folder set up for shared governance docs
 
 ### Phase 2 — Member Portal
 - Supabase Auth for member login
