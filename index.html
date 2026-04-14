@@ -623,41 +623,130 @@
     }
 
     /* ─── CALENDAR ──────────────────────────────────── */
-    #calendar { background: var(--cream); }
-
-    .cal-header {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-bottom: 2.5rem;
-      gap: 1rem;
-      flex-wrap: wrap;
+    #calendar {
+      background: var(--forest);
+      position: relative;
+      overflow: hidden;
     }
-    .cal-header .sec-h2 { margin-bottom: 0; }
+    #calendar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 55% 70% at 75% 40%, rgba(200,144,31,0.09) 0%, transparent 65%),
+        radial-gradient(ellipse 45% 60% at 5% 90%, rgba(42,82,64,0.55) 0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    .cal-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.55fr;
+      gap: 4.5rem;
+      align-items: center;
+      position: relative;
+    }
+
+    .cal-info .sec-h2 {
+      color: var(--cream);
+      max-width: 20ch;
+      margin-bottom: 1.25rem;
+    }
+    .cal-info .sec-h2 em { color: var(--saffron); }
+
+    .cal-desc {
+      font-size: 0.975rem;
+      line-height: 1.72;
+      color: var(--sage-light);
+      max-width: 38ch;
+      margin-bottom: 2rem;
+    }
+
+    .cal-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      margin-bottom: 2.25rem;
+    }
+    .cal-feature {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.865rem;
+      color: var(--sage-light);
+      font-weight: 400;
+    }
+    .cal-feature-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--saffron);
+      flex-shrink: 0;
+      opacity: 0.85;
+    }
+
+    .cal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .cal-ical-link a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.8rem;
+      color: var(--sage-light);
+      text-decoration: none;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      transition: color 0.2s;
+    }
+    .cal-ical-link a:hover { color: var(--cream); }
+
+    .cal-embed-frame {
+      position: relative;
+    }
+    .cal-embed-frame::before {
+      content: '';
+      position: absolute;
+      inset: -10px;
+      border: 1px solid rgba(200,144,31,0.18);
+      border-radius: 1.4rem;
+      pointer-events: none;
+    }
+    .cal-embed-frame::after {
+      content: '';
+      position: absolute;
+      inset: -20px;
+      border: 1px solid rgba(200,144,31,0.07);
+      border-radius: 1.75rem;
+      pointer-events: none;
+    }
 
     .luma-embed-wrap {
-      border: 1px solid rgba(26, 24, 14, 0.09);
       border-radius: 1rem;
       overflow: hidden;
       background: white;
+      box-shadow:
+        0 0 0 1px rgba(245,237,208,0.08),
+        0 32px 80px rgba(0,0,0,0.45),
+        0 8px 28px rgba(0,0,0,0.25);
     }
     .luma-embed-wrap iframe {
       display: block;
       width: 100%;
     }
-    .cal-ical-link {
-      margin-top: 1rem;
-      text-align: right;
+
+    @media (max-width: 860px) {
+      .cal-layout {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+      .cal-info .sec-h2 { max-width: none; }
+      .cal-embed-frame::before,
+      .cal-embed-frame::after { display: none; }
     }
-    .cal-ical-link a {
-      font-size: 0.85rem;
-      color: var(--saffron);
-      text-decoration: none;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      transition: opacity 0.2s;
-    }
-    .cal-ical-link a:hover { opacity: 0.75; }
 
     /* ─── FIND A PROVIDER ───────────────────────────── */
     #find { background: var(--cream-2); border-top: 1px solid var(--cream-3); }
@@ -1818,32 +1907,48 @@
 <!-- ═══ CALENDAR PREVIEW ════════════════════════════════ -->
 <section id="calendar">
   <div class="sec">
-    <div class="cal-header">
-      <div>
-        <p class="sec-label">Member Calendar</p>
-        <h2 class="sec-h2">Upcoming <em>events</em></h2>
+    <div class="cal-layout">
+
+      <!-- Left: Info -->
+      <div class="cal-info">
+        <p class="sec-label on-dark">Member Calendar</p>
+        <h2 class="sec-h2">Join us at our <em>next event</em></h2>
+        <p class="cal-desc">From community trainings to member assemblies, our events are open to language workers, partner organizations, and the Indianapolis community.</p>
+        <ul class="cal-features">
+          <li class="cal-feature"><span class="cal-feature-dot"></span>Free and open to the public</li>
+          <li class="cal-feature"><span class="cal-feature-dot"></span>RSVP directly from each event page</li>
+          <li class="cal-feature"><span class="cal-feature-dot"></span>Trainings, assemblies &amp; consulting workshops</li>
+        </ul>
+        <div class="cal-actions">
+          <a href="https://luma.com/iljc" target="_blank" rel="noopener" class="btn btn-amber">View Full Calendar</a>
+          <p class="cal-ical-link">
+            <a href="https://luma.com/iljc/ics" target="_blank" rel="noopener">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              Subscribe in your calendar app
+            </a>
+          </p>
+        </div>
       </div>
-      <a href="https://luma.com/iljc" target="_blank" rel="noopener" class="btn btn-amber">View Full Calendar</a>
-    </div>
 
-    <div class="luma-embed-wrap">
-      <iframe
-        src="https://luma.com/embed/calendar/cal-X3AX7BxKEdAT8me/events"
-        width="100%"
-        height="450"
-        frameborder="0"
-        style="border: none;"
-        allowfullscreen=""
-        aria-hidden="false"
-        tabindex="0"
-        title="ILJC Events Calendar"
-        loading="lazy"
-      ></iframe>
-    </div>
+      <!-- Right: Embed -->
+      <div class="cal-embed-frame">
+        <div class="luma-embed-wrap">
+          <iframe
+            src="https://luma.com/embed/calendar/cal-X3AX7BxKEdAT8me/events"
+            width="100%"
+            height="500"
+            frameborder="0"
+            style="border: none;"
+            allowfullscreen=""
+            aria-hidden="false"
+            tabindex="0"
+            title="ILJC Events Calendar"
+            loading="lazy"
+          ></iframe>
+        </div>
+      </div>
 
-    <p class="cal-ical-link">
-      <a href="https://luma.com/iljc/ics" target="_blank" rel="noopener">+ Subscribe in your calendar app (iCal)</a>
-    </p>
+    </div>
   </div>
 </section>
 
